@@ -19,7 +19,7 @@ First, log in to your Google Analytics account and [set up a new property](https
 
 * Select "Website", use new "Universal Analytics" tracking
 * **Website name:** anything you want (e.g. GitHub projects)
-* **WebSite URL: the url of your website that runs PHP
+* **WebSite URL:** the url of your website that runs PHP
 * Click "Get Tracking ID", copy the `UA-XXXXX-X` ID on next page
 
 Next, add the `ga-beacon.php` file to your server
@@ -32,7 +32,7 @@ Finally, add a tracking image to the pages you want to track:
 * {tracking id} is the `UA-XXXXX-X` from Google Analytics
   * You can also add the account straight into file if you only need to use one account and want to protect the endpoint for misuse.
 * {path} is an arbitrary path as `/insert/any/path`. For best results specify a meaningful and self-descriptive path. You have to do this manually, the beacon won't automatically record the page path it's embedded on.
-  * It is recommended to pass the path through some urlencoding function like PHP's `urlencode('/insert/any/path'))
+  * It is recommended to pass the path through some urlencoding function like PHP's `urlencode('/insert/any/path'))`
 
 Add the tracker to website / newsletter / whatever:
 
@@ -47,11 +47,13 @@ To de-priorize tracking, add native lazyload (may cause less data collected):
 <img loading="lazy" alt="" src="https://example.com/ga-beacon.php?account=UA-XXXXX-X&path=/blog/hello-world" />
 ```
 
+**Protip:** In PHP application you can dynamically get the current path with `$_SERVER['REQUEST_URI']` that has the current path plus arguments like `/blog/hello-world?lorem=ipsum` or you can get the path without parameters with `parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)` that would return `/blog/hello-world`.
+
 ### FAQ
 
 - **How does this work?** Google Analytics provides a [measurement protocol](https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide) which allows us to POST arbitrary visit data directly to Google servers, and that's exactly what GA Beacon does: we include an image request on our pages which hits the GA Beacon service, and GA Beacon POSTs the visit data to Google Analytics to record the visit. As a result, if you can embed an image, you can beacon data to Google Analytics.
 
-- **Why do we need to proxy?** Google Analytics supports reporting of visit data [via GET requests](https://developers.google.com/analytics/devguides/collection/protocol/v1/reference#transport), but unfortunately we can't use that directly because we need to generate and report a unique visitor ID for each hit - e.g. some pages do not allow us to run JS on the client to generate the ID. To address this, we proxy the request through ga-beacon.appspot.com, which in turn is responsible for generating the unique visitor ID (server generated UUID), setting the appropriate cookies for repeat hits, and reporting the hits to Google Analytics.
+- **Why do we need to proxy?** Google Analytics supports reporting of visit data [via GET requests](https://developers.google.com/analytics/devguides/collection/protocol/v1/reference#transport), but unfortunately we can't use that directly because we need to generate and report a unique visitor ID for each hit - e.g. some pages do not allow us to run JS on the client to generate the ID. To address this, we proxy the request through the site running php (like example.com/ga-beacon.php), which in turn is responsible for generating the unique visitor ID (server generated UUID), setting the appropriate cookies for repeat hits, and reporting the hits to Google Analytics.
 
 - **What about referrals and other visitor information?** Unfortunately the static tracking pixel approach limits the information we can collect about the visit. For example, referral information can't be passed to the tracking pixel because we can't execute JavaScript. As a result, the available metrics are restricted to unique visitors, pageviews, and the User-Agent and IP address of the visitor.
 
